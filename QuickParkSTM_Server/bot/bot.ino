@@ -41,9 +41,16 @@ void loop() {
         String text = bot.messages[i].text;
         String chat_id = bot.messages[i].chat_id;
 
-        if (text == "/posti") {
+        if (text == "/start") {
+          bot.sendMessage(chat_id, "👋 Benvenuto! Invia /posti per sapere quanti posti sono disponibili.", "");
+          
+          String keyboardJson = "[[\"/posti\"]]";
+          bot.sendMessage(chat_id, welcomeMsg, "Markdown", keyboardJson);
+        } 
+        else if(text == "/posti"){
           bot.sendMessage(chat_id, "🚘 Posti disponibili: " + String(postiLiberi), "");
-        } else {
+        }
+        else {
           bot.sendMessage(chat_id, "❌ Comando non valido. Usa /posti", "");
         }
       }
