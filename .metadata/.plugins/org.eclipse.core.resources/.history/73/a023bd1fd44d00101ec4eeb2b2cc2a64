@@ -1,0 +1,14 @@
+#ifndef WIFI_BOT_H
+#define WIFI_BOT_H
+
+#include "main.h"
+#include <stdbool.h>
+
+void wifi_bot_init(void);
+void wifi_bot_handle(void);
+
+
+bool reserve_slot(uint8_t slot_id);
+bool user_open_request(void);
+
+#endif // WIFI_BOT_H

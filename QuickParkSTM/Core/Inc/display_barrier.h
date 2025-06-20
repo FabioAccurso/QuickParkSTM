@@ -1,13 +1,7 @@
-/*
- * display_barrier.h
- *
- *  Created on: Jun 19, 2025
- *      Author: Fabio
- */
+#ifndef DISPLAY_BARRIER_H
+#define DISPLAY_BARRIER_H
 
-#ifndef INC_DISPLAY_BARRIER_H_
-#define INC_DISPLAY_BARRIER_H_
+void display_init(void);
+void display_update(void);
 
-
-
-#endif /* INC_DISPLAY_BARRIER_H_ */
+#endif

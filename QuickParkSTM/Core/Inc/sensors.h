@@ -1,13 +1,8 @@
-/*
- * sensors.h
- *
- *  Created on: Jun 19, 2025
- *      Author: Fabio
- */
+#ifndef SENSORS_H
+#define SENSORS_H
 
-#ifndef INC_SENSORS_H_
-#define INC_SENSORS_H_
+void sensors_init(void);
+void sensors_update(void);
+int sensors_get_free_slots(void);
 
-
-
-#endif /* INC_SENSORS_H_ */
+#endif

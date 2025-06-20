@@ -1,0 +1,53 @@
+#include "wifi_bot.h"
+#include "usart.h"  // Assicurati che huart2 sia visibile
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#define WIFI_UART &huart2
+#define RX_BUFFER_SIZE 64
+
+static char rx_buffer[RX_BUFFER_SIZE];
+static uint8_t rx_index = 0;
+
+// Funzione base per inviare comandi AT
+static void send_cmd(const char* cmd) {
+    HAL_UART_Transmit(WIFI_UART, (uint8_t*)cmd, strlen(cmd), HAL_MAX_DELAY);
+    HAL_UART_Transmit(WIFI_UART, (uint8_t*)"\r\n", 2, HAL_MAX_DELAY);
+    HAL_Delay(100);
+}
+
+// Inizializza il modulo ESP8266
+void wifi_bot_init(void) {
+    send_cmd("AT"); // Test
+    send_cmd("AT+CWMODE=1"); // modalità client
+    send_cmd("AT+CWJAP=\"yourSSID\",\"yourPASS\""); // connessione WiFi
+    send_cmd("AT+CIFSR"); // mostra IP
+}
+
+// Gestisce i comandi in arrivo via UART
+void wifi_bot_handle(void) {
+    uint8_t ch;
+    while (HAL_UART_Receive(WIFI_UART, &ch, 1, 10) == HAL_OK) {
+        if (ch == '\n' || ch == '\r') {
+            rx_buffer[rx_index] = '\0';
+
+            if (rx_index > 0) {
+                // Esegui parsing comando ricevuto
+                if (rx_buffer[0] == 'R') {
+                    uint8_t id = atoi(&rx_buffer[1]);
+                    reserve_slot(id);
+                } else if (rx_buffer[0] == 'A') {
+                    user_open_request();
+                }
+            }
+
+            rx_index = 0;
+            memset(rx_buffer, 0, RX_BUFFER_SIZE);
+        } else {
+            if (rx_index < RX_BUFFER_SIZE - 1) {
+                rx_buffer[rx_index++] = ch;
+            }
+        }
+    }
+}
