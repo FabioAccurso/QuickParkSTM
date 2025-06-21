@@ -75,6 +75,12 @@ void Error_Handler(void);
 #define OSC_IN_GPIO_Port GPIOF
 #define OSC_OUT_Pin GPIO_PIN_1
 #define OSC_OUT_GPIO_Port GPIOF
+#define PS1_Pin GPIO_PIN_0
+#define PS1_GPIO_Port GPIOC
+#define PS1_EXTI_IRQn EXTI0_IRQn
+#define PS2_Pin GPIO_PIN_1
+#define PS2_GPIO_Port GPIOC
+#define PS2_EXTI_IRQn EXTI1_IRQn
 #define SPI1_SCK_Pin GPIO_PIN_5
 #define SPI1_SCK_GPIO_Port GPIOA
 #define SPI1_MISO_Pin GPIO_PIN_6
@@ -111,10 +117,6 @@ void Error_Handler(void);
 #define I2C1_SCL_GPIO_Port GPIOB
 #define I2C1_SDA_Pin GPIO_PIN_9
 #define I2C1_SDA_GPIO_Port GPIOB
-#define MEMS_INT1_Pin GPIO_PIN_0
-#define MEMS_INT1_GPIO_Port GPIOE
-#define MEMS_INT2_Pin GPIO_PIN_1
-#define MEMS_INT2_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
 

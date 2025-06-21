@@ -24,7 +24,6 @@
 #include "sensors.h"
 #include "display_barrier.h"
 #include "wifi_bot.h"
-#include "lcd_i2c.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -52,7 +51,7 @@ TIM_HandleTypeDef htim1;
 PCD_HandleTypeDef hpcd_USB_FS;
 
 /* USER CODE BEGIN PV */
-extern TIM_HandleTypeDef htim1;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -69,17 +68,6 @@ static void MX_TIM1_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-
-// Funzione per impostare angolo del servomotore
-void Servo_Set_Angle(uint8_t angle){
-    if (angle > 180) angle = 180;
-
-    // Converti angolo in tempo in µs (500 µs → 2500 µs)
-    uint16_t pulse_length = 500 + ((angle * 2000) / 180);
-
-    // Imposta il valore del compare register
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, pulse_length);
-}
 /* USER CODE END 0 */
 
 /**
@@ -90,7 +78,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+  int close_entry = 0;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -117,7 +105,7 @@ int main(void)
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
   //sensors_init();
-  //display_init();
+  display_init();
   //wifi_bot_init();
 
   // Esempio in main.c SUPPONENDO CHE IL LED SIA A CATODO COMUNE
@@ -129,22 +117,7 @@ int main(void)
   HAL_Delay(2000);
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET); // LED Verde OFF
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);   // LED Rosso ON
-  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
-
-  // Imposta la posizione iniziale a 0 gradi (impulso di 500)
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 500);
-    HAL_Delay(1000); // Attendi 1 secondo per dare al servo il tempo di posizionarsi
-
-    // Imposta la posizione desiderata a 90 gradi (impulso di 1500)
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 1500);
-
-    lcd_init(); // Inizializza il display
-
-    lcd_put_cur(0, 0); // Posiziona il cursore alla riga 0, colonna 0
-    lcd_send_string("Fabio Accurso");
-
-    lcd_put_cur(1, 0); // Posiziona il cursore alla riga 1, colonna 0
-    lcd_send_string("Gay Supremo");
+  //Servo_Entrance_Close();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -154,6 +127,12 @@ int main(void)
 	  //sensors_update();
 	  //display_update();
 	  //wifi_bot_handle();
+	  close_entry = updateCloseEntry();
+	  if(close_entry == 1){
+		  setCloseEntry(0);
+		  HAL_Delay(1500);
+		  Servo_Entrance_Close();
+	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -347,6 +326,10 @@ static void MX_TIM1_Init(void)
   {
     Error_Handler();
   }
+  if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
   sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
   sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
   sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
@@ -427,10 +410,8 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : DRDY_Pin MEMS_INT3_Pin MEMS_INT4_Pin MEMS_INT1_Pin
-                           MEMS_INT2_Pin */
-  GPIO_InitStruct.Pin = DRDY_Pin|MEMS_INT3_Pin|MEMS_INT4_Pin|MEMS_INT1_Pin
-                          |MEMS_INT2_Pin;
+  /*Configure GPIO pins : DRDY_Pin MEMS_INT3_Pin MEMS_INT4_Pin */
+  GPIO_InitStruct.Pin = DRDY_Pin|MEMS_INT3_Pin|MEMS_INT4_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_EVT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
@@ -446,6 +427,18 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : PS1_Pin */
+  GPIO_InitStruct.Pin = PS1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(PS1_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PS2_Pin */
+  GPIO_InitStruct.Pin = PS2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(PS2_GPIO_Port, &GPIO_InitStruct);
+
   /*Configure GPIO pins : PA0 PA1 */
   GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -458,6 +451,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI1_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 

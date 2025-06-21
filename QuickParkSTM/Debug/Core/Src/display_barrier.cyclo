@@ -1,0 +1,6 @@
+../Core/Src/display_barrier.c:10:6:display_init	1
+../Core/Src/display_barrier.c:34:6:Servo_Entrance_Close	1
+../Core/Src/display_barrier.c:39:6:Servo_Exit_Close	1
+../Core/Src/display_barrier.c:44:6:Servo_Entrance_Open	1
+../Core/Src/display_barrier.c:49:6:Servo_Exit_Open	1
+../Core/Src/display_barrier.c:54:6:Display_Write	2
