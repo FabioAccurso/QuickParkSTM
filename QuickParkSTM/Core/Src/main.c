@@ -24,6 +24,7 @@
 #include "sensors.h"
 #include "display_barrier.h"
 #include "wifi_bot.h"
+#include "lcd_i2c.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -136,6 +137,14 @@ int main(void)
 
     // Imposta la posizione desiderata a 90 gradi (impulso di 1500)
     __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 1500);
+
+    lcd_init(); // Inizializza il display
+
+    lcd_put_cur(0, 0); // Posiziona il cursore alla riga 0, colonna 0
+    lcd_send_string("Fabio Accurso");
+
+    lcd_put_cur(1, 0); // Posiziona il cursore alla riga 1, colonna 0
+    lcd_send_string("Gay Supremo");
   /* USER CODE END 2 */
 
   /* Infinite loop */
