@@ -8,7 +8,7 @@ static uint32_t last_sent = 0;           // Timestamp invio precedente
 static const uint32_t send_interval = 3000; // intervallo invio in ms
 
 void wifi_bot_init(void) {
-    // Nessuna inizializzazione necessaria per ora
+    // Nessuna inizializzazione necessaria
 }
 
 void wifi_bot_handle(void) {
@@ -19,7 +19,7 @@ void wifi_bot_handle(void) {
 
     last_sent = now;
 
-    int free_slots = sensors_get_free_slots();  // funzione fornita dal team
+    int free_slots = sensors_get_free_slots();
     char buffer[32];
     snprintf(buffer, sizeof(buffer), "POSTI:%d\n", free_slots);
 

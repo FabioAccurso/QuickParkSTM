@@ -1,0 +1,50 @@
+#include "sensors.h"
+#include "stm32f3xx_hal.h"
+
+#define TOTAL_SPOTS 3
+
+volatile int free_spots = TOTAL_SPOTS;
+volatile int entry_detected = 0;
+volatile int exit_detected = 0;
+
+extern void barrier_raise_entry(void); // Funzioni da implementare altrove
+extern void barrier_raise_exit(void);
+
+// Eseguito una sola volta all’avvio
+void sensors_init(void) {
+    // Nessuna inizializzazione necessaria se EXTI è gestito via CubeMX
+}
+
+void sensors_update(void) {
+    // Lasciata vuota o usata se servono aggiornamenti periodici
+}
+
+int sensor_get_free_slots(void) {
+    return free_spots;
+}
+
+// --- GESTIONE INTERRUPT ---
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+    if (GPIO_Pin == GPIO_PIN_1) {  // Sensore ingresso (es. PC1)
+        if (!entry_detected && free_spots > 0) {
+            entry_detected = 1;
+            free_spots--;
+            barrier_raise_entry();
+        }
+    }
+    else if (GPIO_Pin == GPIO_PIN_2) { // Sensore uscita (es. PC2)
+        if (!exit_detected && free_spots < TOTAL_SPOTS) {
+            exit_detected = 1;
+            free_spots++;
+            barrier_raise_exit();
+        }
+    }
+    else if (GPIO_Pin == GPIO_PIN_3) {  // SLOT 1 (es. PC3)
+        // Puoi aggiungere aggiornamento LED RGB corrispondente qui
+    }
+    else if (GPIO_Pin == GPIO_PIN_4) {  // SLOT 2 (es. PC4)
+    }
+    else if (GPIO_Pin == GPIO_PIN_5) {  // SLOT 3 (es. PC5)
+    }
+}

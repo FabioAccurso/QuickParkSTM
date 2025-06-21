@@ -1,16 +1,69 @@
 #include "sensors.h"
+#include "stm32f3xx_hal.h"
 
-static int counter = 0;
+#define TOTAL_SPOTS 3
 
+volatile int free_spots = TOTAL_SPOTS;
+volatile int entry_detected = 0;
+volatile int exit_detected = 0;
+
+extern void barrier_open_entry(void); // Funzioni implementate in display_barrier
+extern void barrier_open_exit(void);
+extern void barrier_close_entry(void);
+extern void barrier_close_exit(void);
+
+
+
+// Eseguito una sola volta all’avvio
 void sensors_init(void) {
-    // Nessuna inizializzazione reale
+    // Nessuna inizializzazione necessaria
 }
 
 void sensors_update(void) {
-    // Simula cambiamento dei posti liberi ogni secondo
-    counter = (counter + 1) % 5;  // valori tra 0 e 4
+    // Lasciata vuota o usata se servono aggiornamenti periodici
 }
 
-int sensors_get_free_slots(void) {
-    return 3 + counter;  // tra 3 e 7 posti liberi
+int sensor_get_free_slots(void) {
+    return free_spots;
+}
+
+
+// --- GESTIONE INTERRUPT ---
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+	if (GPIO_Pin == GPIO_PIN_1) {  // Sensore ingresso
+		GPIO_PinState state = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_1);
+	    if (state == GPIO_PIN_RESET && !entry_detected) {
+			// FALLING EDGE: ostacolo davanti al sensore
+			entry_detected = 1;
+			free_spots--;
+			barrier_open_entry();  // Alza la sbarra
+		}
+		else if (state == GPIO_PIN_SET && entry_detected) {
+			// RISING EDGE: ostacolo andato via
+			entry_detected = 0;
+			barrier_close_entry();  // Abbassa la sbarra
+		}
+	}
+	else if (GPIO_Pin == GPIO_PIN_2) {  // Sensore uscita
+		GPIO_PinState state = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_2);
+		if (state == GPIO_PIN_RESET && !exit_detected) {
+			exit_detected = 1;
+			free_spots++;
+			barrier_open_exit();  // Alza sbarra uscita
+		}
+		else if (state == GPIO_PIN_SET && exit_detected) {
+			exit_detected = 0;
+			barrier_close_exit();   // Abbassa sbarra uscita
+		}
+	}
+    else if (GPIO_Pin == GPIO_PIN_3) {  // SLOT 1 (es. PC3)
+        // aggiungere aggiornamento LED RGB
+    }
+    else if (GPIO_Pin == GPIO_PIN_4) {  // SLOT 2 (es. PC4)
+    	// aggiungere aggiornamento LED RGB
+    }
+    else if (GPIO_Pin == GPIO_PIN_5) {  // SLOT 3 (es. PC5)
+    	// aggiungere aggiornamento LED RGB
+    }
 }

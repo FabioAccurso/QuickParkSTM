@@ -1,0 +1,16 @@
+#include "sensors.h"
+
+static int counter = 3;
+
+void sensors_init(void) {
+    // Nessuna inizializzazione reale
+}
+
+void sensors_update(void) {
+    // Simula cambiamento dei posti liberi ogni secondo
+    counter = (counter + 1) % 5;  // valori tra 0 e 4
+}
+
+int sensors_get_free_slots(void) {
+    return 3 + counter;  // tra 3 e 7 posti liberi
+}
