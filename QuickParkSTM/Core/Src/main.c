@@ -79,6 +79,7 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
   int close_entry = 0;
+  int close_exit = 0;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -104,7 +105,7 @@ int main(void)
   MX_USB_PCD_Init();
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
-  //sensors_init();
+  sensors_init();
   display_init();
   //wifi_bot_init();
 
@@ -112,12 +113,7 @@ int main(void)
 
 
   // main.c
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);   // LED Rosso ON
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET); // LED Verde OFF
-  HAL_Delay(2000);
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET); // LED Verde OFF
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);   // LED Rosso ON
-  //Servo_Entrance_Close();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -132,6 +128,12 @@ int main(void)
 		  setCloseEntry(0);
 		  HAL_Delay(1500);
 		  Servo_Entrance_Close();
+	  }
+	  close_exit = updateCloseExit();
+	  if(close_exit == 1){
+		  setCloseExit(0);
+		  HAL_Delay(1500);
+		  Servo_Exit_Close();
 	  }
     /* USER CODE END WHILE */
 
@@ -400,6 +402,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
@@ -410,11 +413,9 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : DRDY_Pin MEMS_INT3_Pin MEMS_INT4_Pin */
-  GPIO_InitStruct.Pin = DRDY_Pin|MEMS_INT3_Pin|MEMS_INT4_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_EVT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOD, Red_light_Pin|Green_light_Pin|Red_lightD2_Pin|Green_lightD3_Pin
+                          |Red_lightD4_Pin|Green_lightD5_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : CS_I2C_SPI_Pin LD4_Pin LD3_Pin LD5_Pin
                            LD7_Pin LD9_Pin LD10_Pin LD8_Pin
@@ -427,17 +428,19 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PS1_Pin */
-  GPIO_InitStruct.Pin = PS1_Pin;
+  /*Configure GPIO pin : MEMS_INT4_Pin */
+  GPIO_InitStruct.Pin = MEMS_INT4_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_EVT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(MEMS_INT4_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PS1_Pin PS2_Pin PS3_Pin PS4_Pin
+                           PS5_Pin */
+  GPIO_InitStruct.Pin = PS1_Pin|PS2_Pin|PS3_Pin|PS4_Pin
+                          |PS5_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(PS1_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PS2_Pin */
-  GPIO_InitStruct.Pin = PS2_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(PS2_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PA0 PA1 */
   GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
@@ -452,12 +455,30 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : Red_light_Pin Green_light_Pin Red_lightD2_Pin Green_lightD3_Pin
+                           Red_lightD4_Pin Green_lightD5_Pin */
+  GPIO_InitStruct.Pin = Red_light_Pin|Green_light_Pin|Red_lightD2_Pin|Green_lightD3_Pin
+                          |Red_lightD4_Pin|Green_lightD5_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 
   HAL_NVIC_SetPriority(EXTI1_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI2_TSC_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI2_TSC_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI3_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI4_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 

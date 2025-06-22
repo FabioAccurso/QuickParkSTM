@@ -59,12 +59,8 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define DRDY_Pin GPIO_PIN_2
-#define DRDY_GPIO_Port GPIOE
 #define CS_I2C_SPI_Pin GPIO_PIN_3
 #define CS_I2C_SPI_GPIO_Port GPIOE
-#define MEMS_INT3_Pin GPIO_PIN_4
-#define MEMS_INT3_GPIO_Port GPIOE
 #define MEMS_INT4_Pin GPIO_PIN_5
 #define MEMS_INT4_GPIO_Port GPIOE
 #define OSC32_IN_Pin GPIO_PIN_14
@@ -81,12 +77,21 @@ void Error_Handler(void);
 #define PS2_Pin GPIO_PIN_1
 #define PS2_GPIO_Port GPIOC
 #define PS2_EXTI_IRQn EXTI1_IRQn
+#define PS3_Pin GPIO_PIN_2
+#define PS3_GPIO_Port GPIOC
+#define PS3_EXTI_IRQn EXTI2_TSC_IRQn
+#define PS4_Pin GPIO_PIN_3
+#define PS4_GPIO_Port GPIOC
+#define PS4_EXTI_IRQn EXTI3_IRQn
 #define SPI1_SCK_Pin GPIO_PIN_5
 #define SPI1_SCK_GPIO_Port GPIOA
 #define SPI1_MISO_Pin GPIO_PIN_6
 #define SPI1_MISO_GPIO_Port GPIOA
 #define SPI1_MISOA7_Pin GPIO_PIN_7
 #define SPI1_MISOA7_GPIO_Port GPIOA
+#define PS5_Pin GPIO_PIN_4
+#define PS5_GPIO_Port GPIOC
+#define PS5_EXTI_IRQn EXTI4_IRQn
 #define LD4_Pin GPIO_PIN_8
 #define LD4_GPIO_Port GPIOE
 #define LD3_Pin GPIO_PIN_9
@@ -111,6 +116,18 @@ void Error_Handler(void);
 #define SWDIO_GPIO_Port GPIOA
 #define SWCLK_Pin GPIO_PIN_14
 #define SWCLK_GPIO_Port GPIOA
+#define Red_light_Pin GPIO_PIN_0
+#define Red_light_GPIO_Port GPIOD
+#define Green_light_Pin GPIO_PIN_1
+#define Green_light_GPIO_Port GPIOD
+#define Red_lightD2_Pin GPIO_PIN_2
+#define Red_lightD2_GPIO_Port GPIOD
+#define Green_lightD3_Pin GPIO_PIN_3
+#define Green_lightD3_GPIO_Port GPIOD
+#define Red_lightD4_Pin GPIO_PIN_4
+#define Red_lightD4_GPIO_Port GPIOD
+#define Green_lightD5_Pin GPIO_PIN_5
+#define Green_lightD5_GPIO_Port GPIOD
 #define SWO_Pin GPIO_PIN_3
 #define SWO_GPIO_Port GPIOB
 #define I2C1_SCL_Pin GPIO_PIN_8

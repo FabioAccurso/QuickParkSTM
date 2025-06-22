@@ -1,6 +1,8 @@
-../Core/Src/sensors.c:18:6:sensors_init	1
-../Core/Src/sensors.c:22:6:sensors_update	1
-../Core/Src/sensors.c:26:5:sensors_get_free_slots	1
-../Core/Src/sensors.c:30:5:updateCloseEntry	1
-../Core/Src/sensors.c:34:6:setCloseEntry	1
-../Core/Src/sensors.c:40:6:HAL_GPIO_EXTI_Callback	12
+../Core/Src/sensors.c:19:6:sensors_init	1
+../Core/Src/sensors.c:26:6:sensors_update	1
+../Core/Src/sensors.c:30:5:sensors_get_free_slots	1
+../Core/Src/sensors.c:34:5:updateCloseEntry	1
+../Core/Src/sensors.c:38:5:updateCloseExit	1
+../Core/Src/sensors.c:42:6:setCloseEntry	1
+../Core/Src/sensors.c:46:6:setCloseExit	1
+../Core/Src/sensors.c:52:6:HAL_GPIO_EXTI_Callback	24
