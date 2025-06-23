@@ -1,2 +1,2 @@
-../Core/Src/display_barrier.c:3:6:display_init	4	static
-../Core/Src/display_barrier.c:7:6:display_update	4	static
+../Core/Src/display_barrier.c:10:6:display_init	8	static
+../Core/Src/display_barrier.c:19:6:display_update	16	static

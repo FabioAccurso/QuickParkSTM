@@ -116,7 +116,7 @@ int main(void)
   while (1)
   {
 	  sensors_update();
-	  display_update();
+	  //display_update();
 	  wifi_bot_handle();
     /* USER CODE END WHILE */
 

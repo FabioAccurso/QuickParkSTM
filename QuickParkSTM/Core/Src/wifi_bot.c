@@ -19,7 +19,7 @@ void wifi_bot_handle(void) {
 
     last_sent = now;
 
-    int free_slots = sensors_get_free_slots();
+    int free_slots =2;
     char buffer[32];
     snprintf(buffer, sizeof(buffer), "POSTI:%d\n", free_slots);
 
