@@ -46,6 +46,8 @@ I2C_HandleTypeDef hi2c1;
 
 SPI_HandleTypeDef hspi1;
 
+TIM_HandleTypeDef htim1;
+
 PCD_HandleTypeDef hpcd_USB_FS;
 
 /* USER CODE BEGIN PV */
@@ -58,13 +60,46 @@ static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_USB_PCD_Init(void);
+static void MX_TIM1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void servo_set_speed(int8_t speed) // Usiamo int8_t perche' va da -100 a 100
+{
+    // Valori teorici in base alla configurazione del timer (1us per tick)
+    const uint16_t CCR_STOP     = 1500; // Valore CCR per fermare il servo (1.5ms)
+    const uint16_t CCR_MIN_CW   = 1000; // Valore CCR per massima velocita' oraria (es. 1ms)
+    const uint16_t CCR_MAX_CCW  = 2000; // Valore CCR per massima velocita' antioraria (es. 2ms)
 
+    uint16_t ccr_value;
+
+    // Limita il valore di 'speed' tra -100 e 100
+    if (speed > 100) {
+        speed = 100;
+    } else if (speed < -100) {
+        speed = -100;
+    }
+
+    if (speed == 0) {
+        // Se la velocità è 0, ferma il servo al punto neutro
+        ccr_value = CCR_STOP;
+    } else if (speed > 0) {
+        // Rotazione in una direzione (es. antioraria per speed > 0)
+        // Mappa speed (1 a 100) da CCR_STOP a CCR_MAX_CCW (1500 a 2000)
+        ccr_value = CCR_STOP + (uint16_t)(((float)speed / 100.0f) * (CCR_MAX_CCW - CCR_STOP));
+    } else { // speed < 0
+        // Rotazione nella direzione opposta (es. oraria per speed < 0)
+        // Mappa speed (-1 a -100) da CCR_STOP a CCR_MIN_CW (1500 a 1000)
+        // Usiamo il valore assoluto di speed per il calcolo
+        ccr_value = CCR_STOP - (uint16_t)(((float)-speed / 100.0f) * (CCR_STOP - CCR_MIN_CW));
+    }
+
+    // Imposta il valore del registro Capture/Compare per il Canale 1 del Timer 1
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, ccr_value);
+}
 /* USER CODE END 0 */
 
 /**
@@ -99,11 +134,19 @@ int main(void)
   MX_I2C1_Init();
   MX_SPI1_Init();
   MX_USB_PCD_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
 
-  sensors_init();
-  display_init();
-  wifi_bot_init();
+  //sensors_init();
+  //display_init();
+  //wifi_bot_init();
+  if (HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1) != HAL_OK){
+	  // Errore durante l'avvio del PWM
+      Error_Handler();
+  }
+
+  servo_set_speed(0);
+  HAL_Delay(1000); // Attendi un secondo per dare tempo al servo di posizionarsi
 
   /* USER CODE END 2 */
 
@@ -111,9 +154,24 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  sensors_update();
-	  display_update();
-	  wifi_bot_handle();
+	  //sensors_update();
+	  //display_update();
+	  //wifi_bot_handle();
+	  // Va a 0 gradi
+	  servo_set_speed(50);
+	  HAL_Delay(3000); // Ruota per 3 secondi
+
+	  // Ferma il servo
+	  servo_set_speed(0);
+	  HAL_Delay(2000); // Rimani fermo per 2 secondi
+
+	  // Ruota nella direzione opposta (es. oraria) a massima velocità
+	  servo_set_speed(-100);
+	  HAL_Delay(3000); // Ruota per 3 secondi
+
+	  // Ferma di nuovo
+	  servo_set_speed(0);
+	  HAL_Delay(2000); // Rimani fermo per 2 secondi
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -160,9 +218,11 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USB|RCC_PERIPHCLK_I2C1;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USB|RCC_PERIPHCLK_I2C1
+                              |RCC_PERIPHCLK_TIM1;
   PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_HSI;
   PeriphClkInit.USBClockSelection = RCC_USBCLKSOURCE_PLL;
+  PeriphClkInit.Tim1ClockSelection = RCC_TIM1CLK_HCLK;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
@@ -185,7 +245,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x2000090E;
+  hi2c1.Init.Timing = 0x00201D2B;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -254,6 +314,80 @@ static void MX_SPI1_Init(void)
   /* USER CODE BEGIN SPI1_Init 2 */
 
   /* USER CODE END SPI1_Init 2 */
+
+}
+
+/**
+  * @brief TIM1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM1_Init(void)
+{
+
+  /* USER CODE BEGIN TIM1_Init 0 */
+
+  /* USER CODE END TIM1_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+  TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
+
+  /* USER CODE BEGIN TIM1_Init 1 */
+
+  /* USER CODE END TIM1_Init 1 */
+  htim1.Instance = TIM1;
+  htim1.Init.Prescaler = 47;
+  htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim1.Init.Period = 19999;
+  htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim1.Init.RepetitionCounter = 0;
+  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_PWM_Init(&htim1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+  sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+  if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
+  sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
+  sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
+  sBreakDeadTimeConfig.DeadTime = 0;
+  sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
+  sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
+  sBreakDeadTimeConfig.BreakFilter = 0;
+  sBreakDeadTimeConfig.Break2State = TIM_BREAK2_DISABLE;
+  sBreakDeadTimeConfig.Break2Polarity = TIM_BREAK2POLARITY_HIGH;
+  sBreakDeadTimeConfig.Break2Filter = 0;
+  sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
+  if (HAL_TIMEx_ConfigBreakDeadTime(&htim1, &sBreakDeadTimeConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM1_Init 2 */
+
+  /* USER CODE END TIM1_Init 2 */
+  HAL_TIM_MspPostInit(&htim1);
 
 }
 
