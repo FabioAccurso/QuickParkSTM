@@ -2,8 +2,8 @@
 #include <WiFiClientSecure.h>
 #include <UniversalTelegramBot.h>
 
-const char* ssid = "Pixel 9";
-const char* password = "benitocervone";
+const char* ssid = "Home&Life SuperWiFi-2D55";
+const char* password = "FH7GBQFP8XPKEXY3";
 const char* botToken = "7593165618:AAEXKfGBs6feieRBebRZMTaB9gXNqacIPJM";  
 // const char* chatID = "YYY";       // <- lo uso solo se voglio un unico utilizzatore
 
