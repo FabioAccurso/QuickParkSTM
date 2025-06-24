@@ -67,39 +67,18 @@ static void MX_TIM1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void servo_set_speed(int8_t speed) // Usiamo int8_t perche' va da -100 a 100
-{
-    // Valori teorici in base alla configurazione del timer (1us per tick)
-    const uint16_t CCR_STOP     = 1500; // Valore CCR per fermare il servo (1.5ms)
-    const uint16_t CCR_MIN_CW   = 1000; // Valore CCR per massima velocita' oraria (es. 1ms)
-    const uint16_t CCR_MAX_CCW  = 2000; // Valore CCR per massima velocita' antioraria (es. 2ms)
-
-    uint16_t ccr_value;
-
-    // Limita il valore di 'speed' tra -100 e 100
-    if (speed > 100) {
-        speed = 100;
-    } else if (speed < -100) {
-        speed = -100;
-    }
-
-    if (speed == 0) {
-        // Se la velocità è 0, ferma il servo al punto neutro
-        ccr_value = CCR_STOP;
-    } else if (speed > 0) {
-        // Rotazione in una direzione (es. antioraria per speed > 0)
-        // Mappa speed (1 a 100) da CCR_STOP a CCR_MAX_CCW (1500 a 2000)
-        ccr_value = CCR_STOP + (uint16_t)(((float)speed / 100.0f) * (CCR_MAX_CCW - CCR_STOP));
-    } else { // speed < 0
-        // Rotazione nella direzione opposta (es. oraria per speed < 0)
-        // Mappa speed (-1 a -100) da CCR_STOP a CCR_MIN_CW (1500 a 1000)
-        // Usiamo il valore assoluto di speed per il calcolo
-        ccr_value = CCR_STOP - (uint16_t)(((float)-speed / 100.0f) * (CCR_STOP - CCR_MIN_CW));
-    }
-
-    // Imposta il valore del registro Capture/Compare per il Canale 1 del Timer 1
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, ccr_value);
+void Servo_Entrance_Open(void){
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 1700);
+    HAL_Delay(350);  // Tempo empirico per circa 90 gradi (da regolare)
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 1500); // Stop
 }
+
+void Servo_Entrance_Close(void){
+	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 1300);
+	HAL_Delay(350);  // Tempo empirico per circa 90 gradi (da regolare)
+	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 1500); // Stop
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -140,13 +119,15 @@ int main(void)
   //sensors_init();
   //display_init();
   //wifi_bot_init();
-  if (HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1) != HAL_OK){
-	  // Errore durante l'avvio del PWM
-      Error_Handler();
-  }
 
-  servo_set_speed(0);
-  HAL_Delay(1000); // Attendi un secondo per dare tempo al servo di posizionarsi
+  if (HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+  Servo_Entrance_Open();
+  Servo_Entrance_Close();
+
 
   /* USER CODE END 2 */
 
@@ -157,21 +138,6 @@ int main(void)
 	  //sensors_update();
 	  //display_update();
 	  //wifi_bot_handle();
-	  // Va a 0 gradi
-	  servo_set_speed(50);
-	  HAL_Delay(3000); // Ruota per 3 secondi
-
-	  // Ferma il servo
-	  servo_set_speed(0);
-	  HAL_Delay(2000); // Rimani fermo per 2 secondi
-
-	  // Ruota nella direzione opposta (es. oraria) a massima velocità
-	  servo_set_speed(-100);
-	  HAL_Delay(3000); // Ruota per 3 secondi
-
-	  // Ferma di nuovo
-	  servo_set_speed(0);
-	  HAL_Delay(2000); // Rimani fermo per 2 secondi
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
