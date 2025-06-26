@@ -55,6 +55,7 @@ void Display_Write(void){
 	/*lcd_put_cur(0, 0); // Posiziona il cursore alla riga 0, colonna 0
 	lcd_send_string("QuickParkSTM");*/
 	if(sensors_get_free_slots() > 0){
+		lcd_clear();
 		lcd_put_cur(1, 0); // Posiziona il cursore alla riga 1, colonna 0
 		char buffer[32];
 		snprintf(buffer, sizeof(buffer), "Slot Left: %d", sensors_get_free_slots());
