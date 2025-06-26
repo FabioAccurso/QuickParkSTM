@@ -1,0 +1,2 @@
+../Core/Src/wifi_bot.c:10:6:wifi_bot_init	1
+../Core/Src/wifi_bot.c:14:6:wifi_bot_handle	2
