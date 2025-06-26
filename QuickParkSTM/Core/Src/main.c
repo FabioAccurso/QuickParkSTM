@@ -28,7 +28,8 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+#define SERVO_UP 1500
+#define SERVO_DOWN 500
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -67,18 +68,25 @@ static void MX_TIM1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void Servo_Entrance_Open(void){
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 1700);
-    HAL_Delay(350);  // Tempo empirico per circa 90 gradi (da regolare)
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 1500); // Stop
-}
-
 void Servo_Entrance_Close(void){
-	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 1300);
-	HAL_Delay(350);  // Tempo empirico per circa 90 gradi (da regolare)
-	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 1500); // Stop
+	// Imposta la posizione iniziale a 0 gradi (impulso di 500)
+	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, SERVO_DOWN);
 }
 
+void Servo_Exit_Close(void){ //DA MODIFICARE TIM_CHANNEL
+	// Imposta la posizione iniziale a 0 gradi (impulso di 500)
+	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, SERVO_DOWN);
+}
+
+void Servo_Entrance_Open(void){
+	// Imposta la posizione desiderata a 90 gradi (impulso di 1500)
+	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, SERVO_UP);
+}
+
+void Servo_Exit_Open(void){ //DA MODIFICARE TIM_CHANNEL
+	// Imposta la posizione desiderata a 90 gradi (impulso di 1500)
+	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, SERVO_UP);
+}
 /* USER CODE END 0 */
 
 /**
@@ -115,20 +123,18 @@ int main(void)
   MX_USB_PCD_Init();
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
-
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1); //Inizializza il PWM per il servomotore di ingresso
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2); //Inizializza il PWM per il servomotore di uscita
   //sensors_init();
   //display_init();
   //wifi_bot_init();
-
-  if (HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1) != HAL_OK)
-    {
-      Error_Handler();
-    }
-
   Servo_Entrance_Open();
+  Servo_Exit_Open();
+
+  HAL_Delay(2000);
+
   Servo_Entrance_Close();
-
-
+  Servo_Exit_Close();
   /* USER CODE END 2 */
 
   /* Infinite loop */
