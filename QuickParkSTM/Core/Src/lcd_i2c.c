@@ -1,6 +1,5 @@
 #include "lcd_i2c.h"
 
-// MODIFICA QUI L'INDIRIZZO SE NECESSARIO (0x27 o 0x3F sono i più comuni)
 #define SLAVE_ADDRESS_LCD 0x27 << 1 // Usa 0x27 per indirizzo 0x4E, o 0x3F per 0x7E
 
 extern I2C_HandleTypeDef hi2c1;  // Riferimento alla nostra interfaccia I2C1

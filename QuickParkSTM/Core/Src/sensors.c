@@ -54,7 +54,7 @@ void setCloseExit(int x){
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 
-	if (GPIO_Pin == PS1_Pin) {  // Sensore ingresso
+	if (GPIO_Pin == PS1_Pin) { // Sensore di ingresso
 		GPIO_PinState state = HAL_GPIO_ReadPin(GPIOC, PS1_Pin);
 		if (state == GPIO_PIN_RESET && !entry_detected) {
 			// FALLING EDGE: ostacolo davanti al sensore
@@ -63,7 +63,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 			}
 			else{
 				entry_detected = 1;
-				//Servo_Entrance_Open();  // Alza la sbarra
 				last_seen = HAL_GetTick();
 			}
 		}
@@ -72,25 +71,24 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 			entry_detected = 0;
 			now = HAL_GetTick();
 			if(now - last_seen > interval){
-				//Servo_Entrance_Close();  // Abbassa la sbarra
 				close_entry = 1;
 				free_spots--;
 				Display_Write();
 			}
 		}
 	}
-	else if(GPIO_Pin == PS2_Pin){
+	else if(GPIO_Pin == PS2_Pin){ // Sensore di uscita
 		GPIO_PinState state = HAL_GPIO_ReadPin(GPIOC, PS2_Pin);
 		if (state == GPIO_PIN_RESET && !exit_detected) {
+			// FALLING EDGE: ostacolo davanti al sensore
 			exit_detected = 1;
-			//Servo_Exit_Open();  // Alza sbarra uscita
 			last_seen = HAL_GetTick();
 		}
 		else if (state == GPIO_PIN_SET && exit_detected) {
+			// RISING EDGE: ostacolo andato via
 			now = HAL_GetTick();
 			exit_detected = 0;
 			if(now - last_seen > interval){
-				//Servo_Exit_Close();   // Abbassa sbarra uscita
 				close_exit = 1;
 				free_spots++;
 				if(free_spots > 3){

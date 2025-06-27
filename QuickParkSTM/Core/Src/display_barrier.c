@@ -7,12 +7,15 @@
 
 extern TIM_HandleTypeDef htim1; // Riferimento alla nostra interfaccia TIM1
 
-void display_init(void){
+void servo_init(void){
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1); //Inizializza il PWM per il servomotore di ingresso
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2); //Inizializza il PWM per il servomotore di uscita
-	lcd_init(); // Inizializza il display
 	Servo_Entrance_Close();
 	Servo_Exit_Close();
+}
+
+void display_init(void){
+	lcd_init(); // Inizializza il display
 	lcd_put_cur(0, 0);
 	lcd_send_string("QuickParkSTM");
 	lcd_put_cur(1, 0);
@@ -21,33 +24,23 @@ void display_init(void){
 	Display_Write();
 }
 
-/*void Servo_Set_Angle(uint8_t angle){
-    if (angle > 180) angle = 180;
-
-    // Converti angolo in tempo in µs (500 µs → 2500 µs)
-    uint16_t pulse_length = 500 + ((angle * 2000) / 180);
-
-    // Imposta il valore del compare register
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, pulse_length);
-}*/
-
 void Servo_Entrance_Close(void){
-	// Imposta la posizione iniziale a 0 gradi (impulso di 500)
+	// Imposta la posizione iniziale a 0 gradi
 	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, SERVO_DOWN);
 }
 
-void Servo_Exit_Close(void){ //DA MODIFICARE TIM_CHANNEL
-	// Imposta la posizione iniziale a 0 gradi (impulso di 500)
+void Servo_Exit_Close(void){
+	// Imposta la posizione iniziale a 0 gradi
 	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, SERVO_DOWN);
 }
 
 void Servo_Entrance_Open(void){
-	// Imposta la posizione desiderata a 90 gradi (impulso di 1500)
+	// Imposta la posizione desiderata a 90 gradi
 	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, SERVO_UP);
 }
 
-void Servo_Exit_Open(void){ //DA MODIFICARE TIM_CHANNEL
-	// Imposta la posizione desiderata a 90 gradi (impulso di 1500)
+void Servo_Exit_Open(void){
+	// Imposta la posizione desiderata a 90 gradi
 	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, SERVO_UP);
 }
 
