@@ -2,8 +2,8 @@
 #include "lcd_i2c.h"
 #include "sensors.h"
 
-#define SERVO_UP 1500
-#define SERVO_DOWN 500
+#define SERVO_UP 500
+#define SERVO_DOWN 1500
 
 extern TIM_HandleTypeDef htim1; // Riferimento alla nostra interfaccia TIM1
 
@@ -63,7 +63,7 @@ void Display_Write(void){
 	}
 	else{
 		lcd_put_cur(1, 0); // Posiziona il cursore alla riga 1, colonna 0
-		lcd_send_string("Parking Full :(");
+		lcd_send_string("Parking Full");
 	}
 
 }
